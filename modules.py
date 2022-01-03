@@ -13,10 +13,55 @@ from scipy import stats
 arcsec = u.arcsec
 
 
+mag2r_old = lambda mag: 1630. * 1.396**(-mag)  # the DR9 radius-mag relation
 
-def mag2rad(mag):
+class LRGRad:
+    
+    def __init__(self):
+        from scipy.interpolate import interp1d
+        
+        mags = np.array([4.0, 9.0, 10.0, 10.5, 11.5, 12.0, 12.5, 13.5, 14.0, 14.5, 15.0, 15.5, 16.0, 17.0, 18.0])
+        radii = np.array([429.18637985, 80.95037032, 57.98737129, 36.80882682,
+                26.36735446, 25.29190318, 21.40616169, 15.33392671,
+                13.74150366, 13.56870306, 12.03092488, 11.10823009,
+                 9.79334208, 7.01528803, 5.02527796])
+        log_radii = np.log10(radii)
+        f_radius_log_south = interp1d(mags, log_radii, bounds_error=False, fill_value='extrapolate')
+        self.f_radius_south = lambda mags: 10**f_radius_log_south(mags)
+
+
+        mags = np.array([4.0, 9.0, 10.0, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0, 14.5, 15.0, 15.5, 16.0, 17.0, 18.0])
+        radii = np.array([429.18637985, 80.95037032, 60., 60.,
+                60., 47.46123803, 38.68173428, 32.73883553,
+                27.70897871, 23.45188791, 19.84883862, 16.79934664,
+                13.67150555, 11.57107301, 7.83467367, 5.61223042,
+                 4.02022236])
+        log_radii = np.log10(radii)
+        f_radius_log_north = interp1d(mags, log_radii, bounds_error=False, fill_value='extrapolate')
+        self.f_radius_north = lambda mags: 10**f_radius_log_north(mags)        
+
+
+
+def mag2rad_south(mag):
+    # South
     p = [ 3.95834780e+00, -2.39565502e-01,  3.92857149e-03]
     return 10**(p[0]+p[1]*mag+p[2]*mag*mag)
+
+
+def mag2rad_north(mag):
+    # North
+    p = [ 4.16033750e+00, -2.20287797e-01,  2.14641897e-03]
+    return 10**(p[0]+p[1]*mag+p[2]*mag*mag)
+
+
+def mag2rad(mag, field):
+    # Radius-mag relationship
+    if field=='north':
+        return mag2rad_north(mag)
+    elif field=='south':
+        return mag2rad_south(mag)
+    else:
+        raise ValueError(f"{field} not implemented.")
 
 class DataLoader:
     """
@@ -90,11 +135,7 @@ class DataLoader:
         gaia_suppl.rename_columns(gaia_suppl.colnames, self.gaia_columns)
         gaia = vstack([gaia, gaia_suppl], join_type='exact')
         
-        print(f'# of gaia objects: {len(gaia)}')
-
-        #gaia['radius'] = 1630. * 1.396**(-gaia['mask_mag'])  # the DR9 radius-mag relation
-        gaia['radius'] = mag2rad(gaia['mask_mag'])
-        
+        print(f'# of gaia objects: {len(gaia)}')        
         
         if field=='south':
             mask = (gaia['DEC']<36.)
@@ -104,6 +145,10 @@ class DataLoader:
             
         gaia = gaia[mask]
         print(f'# of gaia objects ({field}): {len(gaia)}')
+        
+        #gaia['radius'] = 1630. * 1.396**(-gaia['mask_mag'])  # the DR9 radius-mag relation
+        gaia['radius'] = mag2rad(gaia['mask_mag'], field)
+        
         return gaia
     
     def read_ranvar(self, field):
