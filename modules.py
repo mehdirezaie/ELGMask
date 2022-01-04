@@ -41,25 +41,42 @@ class LRGRad:
         self.f_radius_north = lambda mags: 10**f_radius_log_north(mags)        
 
 
+class ELGRad:
+    def __init__(self):
+        from scipy.interpolate import interp1d
+        
+        # observed ELG
+        mags = np.array([4., 5., 6., 7.] + np.arange(7.5, 18.5, 0.5).tolist())
 
-def mag2rad_south(mag):
-    # South
-    p = [ 3.95834780e+00, -2.39565502e-01,  3.92857149e-03]
-    return 10**(p[0]+p[1]*mag+p[2]*mag*mag)
-
-
-def mag2rad_north(mag):
-    # North
-    p = [ 4.16033750e+00, -2.20287797e-01,  2.14641897e-03]
-    return 10**(p[0]+p[1]*mag+p[2]*mag*mag)
+        radii_north = [600., 550., 450., 300., 250., 
+                       230., 180., 170., 130., 110., 100.,
+                       80.,  60.,  35.,  30.,  25., 
+                       22.,  18.,  16.,  11., 10.,
+                       9.,  7., 5., 4., 3.]
+        
+        log_radii = np.log10(radii_north)
+        f_radius_log_north = interp1d(mags, log_radii, bounds_error=False, fill_value='extrapolate')
+        self.f_radius_north = lambda mags: 10**f_radius_log_north(mags)
+        
+                
+        radii_south = [600., 400., 300., 220., 180., 
+                       160., 120., 100., 90., 70., 50., 
+                       45., 40., 35., 30., 22., 20.,
+                       18., 13., 11., 8., 7.0, 6.0, 
+                       5.0, 4.0, 3.0]        
+        log_radii = np.log10(radii_south)
+        f_radius_log_south = interp1d(mags, log_radii, bounds_error=False, fill_value='extrapolate')
+        self.f_radius_south = lambda mags: 10**f_radius_log_south(mags)        
+        
 
 
 def mag2rad(mag, field):
+    rad = ELGRad()
     # Radius-mag relationship
     if field=='north':
-        return mag2rad_north(mag)
+        return rad.f_radius_north(mag)
     elif field=='south':
-        return mag2rad_south(mag)
+        return rad.f_radius_south(mag)
     else:
         raise ValueError(f"{field} not implemented.")
 
@@ -318,6 +335,37 @@ def relative_density_subplots(bins, density, ref_density, nbins=101, vmin=-2, vm
     ax[1].plot(mesh_d2d.flatten(), density_ratio.flatten()-1, '.', markersize=1.5)
     ax[1].plot(bin_center, bin_mean)
     # plt.axvline(mask_length1/2, lw=1, color='k')
+    # plt.axvline(mask_length2/2, lw=1, color='k')
+    ax[1].set_xlabel(xlabel2)
+    ax[1].set_ylabel(ylabel2)
+    ax[1].grid(alpha=0.5)
+    ax[1].axis([0, plot_radius, -1.1, 1.6])
+    
+    return ax, density_ratio    
+
+
+
+def relative_density_subplots_fast(bins, rdens, vmin=-2, vmax=2,
+                              xlabel1='$\Delta$RA (arcsec)', ylabel1='$\Delta$DEC (arcsec)',
+                              xlabel2='distance (arcsec)', ylabel2='fractional overdensity'):
+    
+    (bin_center, bin_mean), (mesh_d2d, density_ratio) = rdens
+    extent = bins.max()*np.array([-1, 1, -1, 1])
+    plot_radius = bins.max()
+
+    fig, ax = plt.subplots(1, 2, figsize=(17, 6.5))
+    dens = ax[0].imshow(density_ratio.transpose()-1, origin='lower', aspect='equal', 
+               cmap='seismic', extent=extent, vmin=vmin, vmax=vmax)
+    fig.colorbar(dens, ax=ax[0], fraction=0.046, pad=0.04)
+    ax[0].axis([-plot_radius*1.03, plot_radius*1.03, -plot_radius*1.03, plot_radius*1.03])
+    ax[0].set_xlabel(xlabel1)
+    ax[0].set_ylabel(ylabel1)
+    # plt.show()
+    
+    ax[1].plot(mesh_d2d.flatten(), density_ratio.flatten()-1, '.', markersize=1.5)
+    ax[1].plot(bin_center, bin_mean)
+    #ax[1].axhline(0.2, lw=1, color='k', ls='-')
+    #ax[1].axhline(-0.2, lw=1, color='k', ls='-')    
     # plt.axvline(mask_length2/2, lw=1, color='k')
     ax[1].set_xlabel(xlabel2)
     ax[1].set_ylabel(ylabel2)
