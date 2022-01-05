@@ -38,7 +38,7 @@ class LRGRad:
                  4.02022236])
         log_radii = np.log10(radii)
         f_radius_log_north = interp1d(mags, log_radii, bounds_error=False, fill_value='extrapolate')
-        self.f_radius_north = lambda mags: 10**f_radius_log_north(mags)        
+        self.f_radius_north = lambda mags: 10**f_radius_log_north(mags)              
 
 
 class ELGRad:
@@ -48,26 +48,25 @@ class ELGRad:
         # observed ELG
         mags = np.array([4., 5., 6., 7.] + np.arange(7.5, 18.5, 0.5).tolist())
 
-        radii_north = [600., 550., 450., 300., 250., 
-                       230., 180., 170., 130., 110., 100.,
-                       80.,  60.,  35.,  30.,  25., 
-                       22.,  18.,  16.,  11., 10.,
-                       9.,  7., 5., 4., 3.]
+        radii_north = [690., 590., 550., 510., 310., 
+                       270., 260., 250., 150., 120., 95.,
+                       85.,  70.,  65.,  40.,  35., 
+                       30.,  25.,  20.,  18., 15.,
+                       12.,  10.,  10., 8.0, 7.0]
         
         log_radii = np.log10(radii_north)
         f_radius_log_north = interp1d(mags, log_radii, bounds_error=False, fill_value='extrapolate')
         self.f_radius_north = lambda mags: 10**f_radius_log_north(mags)
         
                 
-        radii_south = [600., 400., 300., 220., 180., 
-                       160., 120., 100., 90., 70., 50., 
-                       45., 40., 35., 30., 22., 20.,
-                       18., 13., 11., 8., 7.0, 6.0, 
-                       5.0, 4.0, 3.0]        
+        radii_south = [700., 500., 350., 260., 200., 
+                       180., 170., 120., 100., 75., 65., 
+                       55., 50., 40., 30., 25., 22.,
+                       19., 18., 14., 11., 10.0, 7.5, 
+                       6.0, 5.5, 4.2]        
         log_radii = np.log10(radii_south)
         f_radius_log_south = interp1d(mags, log_radii, bounds_error=False, fill_value='extrapolate')
-        self.f_radius_south = lambda mags: 10**f_radius_log_south(mags)        
-        
+        self.f_radius_south = lambda mags: 10**f_radius_log_south(mags) 
 
 
 def mag2rad(mag, field):
