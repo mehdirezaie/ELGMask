@@ -144,6 +144,26 @@ class DataLoader:
         
         return cat
     
+    def read_siena(self, field):
+        d = ft.FITS('/fs/ess/PHS0336/data/templates/SGA-2020.fits')
+        dd = Table(d[1].read(columns=['RA', 'DEC', 'D26', 'MAG_LEDA']))
+        
+        
+        print(f'# of Siena objects: {len(dd)}') 
+        if field=='south':
+            mask = (dd['DEC']<36.)
+        else:
+            mask = (dd['DEC']>30.)
+            mask &= (dd['RA']<310.) & (dd['RA']>75.)
+            
+        dd = dd[mask]
+        print(f'# of gaia objects ({field}): {len(dd)}')
+        dd['radius'] = dd['D26']*60 # arcsec
+        
+        return dd
+        
+        
+    
     def read_gaia(self, field):
         """ Read Gaia star catalog """
         gaia = Table(ft.read(self.gaia_path, columns=self.gaia_columns))
