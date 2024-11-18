@@ -85,9 +85,9 @@ class DataLoader:
     """
     def __init__(self, **kw):   
         # initiate the paths
-        self.data_dir = kw.get('data_dir', '/fs/ess/PHS0336/data/elgmask')
-        self.gaia_path = kw.get('gaia_path', '/fs/ess/PHS0336/data/elgmask/gaia_lrg_mask_v1.fits')
-        self.gaia_suppl_path = kw.get('gaia_suppl_path', '/fs/ess/PHS0336/data/elgmask/gaia_reference_suppl_dr9.fits')
+        self.data_dir = kw.get('data_dir', '/fs/ess/PHS0336/data/tanveer/elgmask')
+        self.gaia_path = kw.get('gaia_path', '/fs/ess/PHS0336/data/tanveer/elgmask/gaia_lrg_mask_v1.fits')
+        self.gaia_suppl_path = kw.get('gaia_suppl_path', '/fs/ess/PHS0336/data/tanveer/elgmask/gaia_reference_suppl_dr9.fits')
         
         self.gaia_columns = kw.get('gaia_columns', ['RA', 'DEC', 'mask_mag'])
         self.target_class = kw.get('target_class', 'ELG')
